@@ -1,16 +1,16 @@
 CC = gcc
 OUTPUT = test
-OBJECTS = ./src/gc_test.o ./src/gc_log.o ./src/gc_malloc.o
-OBJECTS_DIR = ./src/
-SOURCE = ./src/gc_test.c ./src/gc_log.c ./src/gc_malloc.c
+SOURCE = ./src/gc_log.c ./src/gc_test.c ./src/gc_malloc.c
+OBJECTS = $(patsubst %.c, %.o, $(SOURCE))
 INCLUDES = ./includes/gc_malloc.h
 INCLUDE_DIR = ./includes/
+FLAGS = -g
 
 $(OUTPUT) : $(OBJECTS) $(INCLUDES)
-	$(CC) -o $(OUTPUT) $(OBJECTS) -I $(INCLUDE_DIR)
+	$(CC) $(FLAGS) -o $(OUTPUT) $(OBJECTS) -I $(INCLUDE_DIR)
 
-$(OBJECTS) : $(SOURCE) $(INCLUDES)
-	$(CC) -c $< -o $@
+%.o : %.c
+	$(CC) $(FLAGS) -c $< -o $@ -I $(INCLUDE_DIR)
 
 clean :
 	rm -f ./src/*.o $(OUTPUT)

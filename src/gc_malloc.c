@@ -1,8 +1,10 @@
 #include "gc_malloc.h"
 
-inline void gc_debug(const char* msg);
-inline void gc_warn(const char* msg);
-inline void gc_error(const char* msg);
+static block_head_t *free_block;
+static block_head_t *used_block;
+
+static block_head_t *start_memory;
+static block_head_t *end_memory;
 
 /**
    创建block头部
@@ -31,7 +33,7 @@ static void init_memory_pool(size_t size) {
   if (start_memory == -1) {
     gc_error("init_memory : sbrk return -1");
   }
-  start_memory += size;
+  end_memory = start_memory + size;
   free_block = build_block(start_memory, size, start_memory);
 }
 
@@ -53,11 +55,18 @@ static block_head_t *malloc_block(size_t size) {
     if (find_ptr->size >= size) {
       // find it
       if (find_ptr->size - size > 1) {
+	// this block is enough to break
 	block_head_t *new_ptr = build_block(find_ptr + size, find_ptr->size - size, find_ptr->next);
+	free_block = new_ptr;
+	if (find_ptr->next == find_ptr) {
+	  // last one
+	  new_ptr->next = new_ptr;
+	} else {
+	  new_ptr->next = find_ptr->next;
+	}
 	prev_ptr->next = new_ptr;
 	find_ptr->next = NULL;
 	find_ptr->size = size;
-	free_block = prev_ptr;
 	return find_ptr;
       } else {
 	if (find_ptr->next == find_ptr) {
@@ -166,6 +175,7 @@ static void add_to_used_block(block_head_t *block) {
   }
   if (used_block == NULL) {
     used_block = block;
+    block->next = block;
   } else {
     block->next = used_block->next;
     used_block->next = block;
@@ -199,6 +209,14 @@ static block_head_t *remove_block_from_used(block_head_t *block) {
   return NULL;
 }
 
+static void print_block_list(block_head_t *list) {
+  block_head_t *ptr = list;
+  do {
+    printf("[ptr : %x, size : %d, next : %x]\n", ptr, ptr->size, ptr->next);
+    ptr = ptr->next;
+  } while (ptr != list);
+}
+
 void *gc_malloc(size_t size_byte) {
   if (size_byte == 0)
     return NULL;
@@ -230,4 +248,33 @@ void gc_free(void *ptr) {
     return;
   }
   free_block_func(block);
+}
+
+void gc_init(size_t size_byte) {
+  if (size_byte == 0) {
+    gc_error("gc_init : size is 0");
+  }
+  int size = 0;
+  if ((size_byte % PAGE) != 0) {
+    size = size_byte / PAGE + 1;
+  } else {
+    size = size_byte / PAGE;
+  }
+  size++; // add head struct's size
+  init_memory_pool(size);
+}
+
+void gc_debug_print() {
+  if (free_block == NULL) {
+    printf("free_block is empty\n");
+  } else {
+    printf("free_block : \n");
+    print_block_list(free_block);
+  }
+  if (used_block == NULL) {
+    printf("used_block is empty\n");
+  } else {
+    printf("used_block : \n");
+    print_block_list(used_block);
+  }
 }
