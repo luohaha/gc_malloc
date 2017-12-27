@@ -137,10 +137,10 @@ static void insert_block_in_left(block_head_t *left, block_head_t *mid, block_he
 **/
 static void free_block_func(block_head_t *block) {
   if (block == NULL) {
-    gc_error("free_block : block is NULL");
+    gc_error("free_block_func : block is NULL");
   }
   if (block > end_memory || block < start_memory) {
-    gc_error("free_block : block is out of memory pool");
+    gc_error("free_block_func : block is out of memory pool");
   }
   if (free_block == NULL) {
     free_block = block;
@@ -151,19 +151,21 @@ static void free_block_func(block_head_t *block) {
     if (find_ptr < block && block < find_ptr->next) {
       // insert and merge
       insert_block_in_mid(find_ptr, block, find_ptr->next);
+      return;
     } else if (find_ptr >= find_ptr->next) {
       if (block > find_ptr) {
 	insert_block_in_right(find_ptr, block, find_ptr->next);
       } else if (block < find_ptr->next) {
 	insert_block_in_left(find_ptr, block, find_ptr->next);
       } else {
-	gc_error("free_block : can't happen");
+	gc_error("free_block_func : can't happen");
       }
+      return;
     } else {
       find_ptr = find_ptr->next;
     }
   } while (find_ptr != free_block);
-  gc_error("free_block : can't find a place for this block");
+  gc_error("free_block_func : can't find a place for this block");
 }
 
 static void add_to_used_block(block_head_t *block) {
@@ -200,6 +202,10 @@ static block_head_t *remove_block_from_used(block_head_t *block) {
   do {
     if (find_ptr == block) {
       prev_ptr->next = find_ptr->next;
+      if (find_ptr == used_block) {
+	used_block = find_ptr->next;
+      }
+      find_ptr->next = NULL;
       return find_ptr;
     } else {
       prev_ptr = find_ptr;
