@@ -4,9 +4,10 @@
 #include<stdlib.h>
 #include<stdio.h>
 #include<sys/types.h>
+#include<unistd.h>
 
-typedef struct {
-  struct block_head_t* next;
+typedef struct block_head_t {
+  struct block_head_t *next;
   size_t size; // include block head struct, each's size is PAGE
 } block_head_t;
 

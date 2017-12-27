@@ -1,8 +1,8 @@
 #include "gc_malloc.h"
 
-void gc_debug(const char* msg);
-void gc_warn(const char* msg);
-void gc_error(const char* msg);
+inline void gc_debug(const char* msg);
+inline void gc_warn(const char* msg);
+inline void gc_error(const char* msg);
 
 /**
    创建block头部
@@ -12,7 +12,7 @@ static block_head_t *build_block(block_head_t *addr, size_t size, block_head_t *
     gc_error("init_meory: addr or next is NULL");
   }
   if (size <= 1) {
-    gc_error("build_block : size is less than 1");∑
+    gc_error("build_block : size is less than 1");
   }
   block_head_t *block = (block_head_t*) addr;
   block->next = next;
@@ -117,7 +117,7 @@ static void insert_block_in_right(block_head_t *left, block_head_t *mid, block_h
 static void insert_block_in_left(block_head_t *left, block_head_t *mid, block_head_t *right) {
   mid->next = right;
   left->next = mid;
-  if (mid + mid>size == right) {
+  if (mid + mid->size == right) {
     mid->size += right->size;
     mid->next = right->next;
   }
@@ -126,7 +126,7 @@ static void insert_block_in_left(block_head_t *left, block_head_t *mid, block_he
 /**
    回收已用内存块
 **/
-static void free_block(block_head_t *block) {
+static void free_block_func(block_head_t *block) {
   if (block == NULL) {
     gc_error("free_block : block is NULL");
   }
@@ -229,5 +229,5 @@ void gc_free(void *ptr) {
   if (remove_block_from_used(block) == NULL) {
     return;
   }
-  free_block(block);
+  free_block_func(block);
 }

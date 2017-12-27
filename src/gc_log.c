@@ -7,7 +7,7 @@ inline void gc_debug(const char* msg) {
 #endif
 }
 
-inline void gc_warn(const char* msg)≈ {
+inline void gc_warn(const char* msg) {
 #ifdef _GC_LOG_WARN
   fprintf(stderr, "[warn] : %s\n", msg);
 #endif
