@@ -106,6 +106,7 @@ static void insert_block_in_mid(block_head_t *left, block_head_t *mid, block_hea
     left->size += mid->size;
     left->next = mid->next;
   }
+  free_block = left;
 }
 
 /**
@@ -118,6 +119,7 @@ static void insert_block_in_right(block_head_t *left, block_head_t *mid, block_h
     left->size += mid->size;
     left->next = mid->next;
   }
+  free_block = left;
 }
 
 /**
@@ -130,6 +132,7 @@ static void insert_block_in_left(block_head_t *left, block_head_t *mid, block_he
     mid->size += right->size;
     mid->next = right->next;
   }
+  free_block = mid;
 }
 
 /**
@@ -155,12 +158,13 @@ static void free_block_func(block_head_t *block) {
     } else if (find_ptr >= find_ptr->next) {
       if (block > find_ptr) {
 	insert_block_in_right(find_ptr, block, find_ptr->next);
+	return;
       } else if (block < find_ptr->next) {
 	insert_block_in_left(find_ptr, block, find_ptr->next);
+	return;
       } else {
-	gc_error("free_block_func : can't happen");
+	find_ptr = find_ptr->next;
       }
-      return;
     } else {
       find_ptr = find_ptr->next;
     }
@@ -202,7 +206,9 @@ static block_head_t *remove_block_from_used(block_head_t *block) {
   do {
     if (find_ptr == block) {
       prev_ptr->next = find_ptr->next;
-      if (find_ptr == used_block) {
+      if (find_ptr->next == find_ptr) {
+	used_block = NULL;
+      } else if (find_ptr == used_block) {
 	used_block = find_ptr->next;
       }
       find_ptr->next = NULL;
