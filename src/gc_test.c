@@ -1,8 +1,6 @@
 #include "gc_malloc.h"
 
-int main() {
-  ASSERT(1 == 1, "1 == 1");
-  gc_init(512);
+void test_malloc_free() {
   gc_debug_print();
   void *a = gc_malloc(16);
   ASSERT(a != NULL, "a != NULL");
@@ -19,5 +17,11 @@ int main() {
   gc_debug_print();
   gc_free(a);
   gc_debug_print();
+}
+
+int main() {
+  ASSERT(1 == 1, "1 == 1");
+  gc_init(512);
+  test_malloc_free();
   return 0;
 }

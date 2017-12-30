@@ -188,16 +188,16 @@ static void add_to_used_block(block_head_t *block) {
   }
 }
 
-static int is_block_in_used(block_head_t *block) {
+block_head_t* find_block_in_used(size_t *ptr)∑ {
   block_head_t *find_ptr = used_block;
   do {
-    if (find_ptr == block) {
-      return 1;
+    if (find_ptr + 1 <= ptr && ptr < find_ptr + find_ptr->size) {
+      return find_ptr;
     } else {
       find_ptr = find_ptr->next;
     }
   } while (find_ptr != used_block);
-  return 0;
+  return NULL;
 }
 
 static block_head_t *remove_block_from_used(block_head_t *block) {
